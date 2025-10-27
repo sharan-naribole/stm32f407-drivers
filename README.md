@@ -330,6 +330,67 @@ This project is ideal for:
 
 ---
 
+## 🧪 Troubleshooting
+
+### GPIO Issues
+- **LED not blinking:** Check GPIOD clock enable in RCC_AHB1ENR register and verify pin configuration (MODER, OTYPER)
+- **Button not responding:** Verify PA0 is configured as input, check for external pull-down resistor on Discovery board
+- **Interrupt not firing:** Ensure EXTI line is configured in SYSCFG_EXTICR, interrupt is enabled in NVIC, and ISR name matches vector table
+
+### SPI Issues
+- **No SPI output:** Check SPI clock enable (RCC_APB1/2ENR), verify SPE bit is set in SPI_CR1, ensure GPIO pins configured for alternate function
+- **Wrong data received:** Verify CPOL/CPHA match between master and slave, check baud rate divisor, ensure NSS timing is correct
+- **SPI communication errors:** Check BSY flag before disabling SPI, verify TXE/RXNE flags, ensure sufficient delay for slave response
+- **Master-Slave connection issues:** Verify all 5 connections (SCK, MISO, MOSI, CS, GND), check common ground, keep wires short for high-speed communication
+
+### General Issues
+- **Code won't flash:** Verify ST-Link connection, check target power, try erasing chip first
+- **Hardfault on startup:** Check stack pointer initialization, verify vector table location, review startup code
+- **Undefined reference errors:** Ensure all driver .c files are included in build, check linker script
+
+---
+
+## ❓ FAQ
+
+**Q: Why bare-metal instead of HAL?**
+A: Bare-metal programming provides complete control and deep understanding of hardware. This project is educational-focused, helping you master register-level programming before using abstraction layers.
+
+**Q: Can I use these drivers in production?**
+A: These drivers demonstrate production-ready patterns (error handling, proper initialization, etc.) but may need additional features like timeout handling, advanced error recovery, and power management for commercial use.
+
+**Q: What's the difference between GPIO modes?**
+A:
+- **Input:** Read external signals (buttons, sensors)
+- **Output:** Drive LEDs, control logic levels
+- **Alternate Function:** Hand control to peripherals (SPI, I2C, UART)
+- **Analog:** For ADC/DAC use, disables digital circuitry
+
+**Q: How do I choose SPI clock speed?**
+A: Start with a conservative speed (2 MHz) for testing. Increase gradually while monitoring signal quality with oscilloscope/logic analyzer. Consider wire length, slave device limits, and EMI requirements.
+
+**Q: What are the next drivers to implement?**
+A: The roadmap prioritizes I2C (for sensors), UART (for serial communication), and USART (for advanced protocols). Check the Development Roadmap section for details.
+
+---
+
+## 📚 References
+
+### Official Documentation
+- [STM32F407 Reference Manual](https://www.st.com/resource/en/reference_manual/dm00031020-stm32f405-415-stm32f407-417-stm32f427-437-and-stm32f429-439-advanced-arm-based-32-bit-mcus-stmicroelectronics.pdf) - Complete peripheral register descriptions
+- [STM32F407G-DISC1 User Manual](https://www.st.com/resource/en/user_manual/dm00039084-discovery-kit-with-stm32f407vg-mcu-stmicroelectronics.pdf) - Board-specific information and schematics
+- [ARM Cortex-M4 Generic User Guide](https://developer.arm.com/documentation/dui0553/latest/) - Core architecture and programming model
+
+### Learning Resources
+- [FastBit Embedded Brain Academy](https://www.udemy.com/user/kiran-nayak-2/) - Embedded Systems Programming on ARM Cortex-M3/M4 Processor
+- [Making Embedded Systems](https://books.google.com/books/about/Making_Embedded_Systems.html?id=fLP4EAAAQBAJ) by Elecia White - Design patterns for embedded software
+- [The Definitive Guide to ARM Cortex-M3/M4](https://www.amazon.com/Definitive-Guide-ARM-Cortex-M3-M4-Processors/dp/0124080820) by Joseph Yiu
+
+### Community & Tools
+- [STM32CubeIDE](https://www.st.com/en/development-tools/stm32cubeide.html) - Free IDE from STMicroelectronics
+- [ARM Keil MDK](https://www.keil.com/demo/eval/arm.htm) - Alternative development environment
+
+---
+
 ## 📜 License
 
 This project is open source and available for educational purposes.
