@@ -9,6 +9,7 @@ A comprehensive collection of bare-metal peripheral drivers and examples for the
 - **Pure bare-metal programming** - No HAL dependencies, direct register access
 - **Complete GPIO driver** with EXTI interrupt support
 - **Full-featured SPI driver** supporting Master/Slave, 8/16-bit modes
+- **Comprehensive I2C driver** with Master/Slave, blocking/interrupt modes
 - **Well-documented examples** with detailed inline comments and flowcharts
 - **Professional code structure** - Modular, reusable, production-ready patterns
 - **Educational focus** - Ideal for learning ARM Cortex-M4 architecture
@@ -32,14 +33,25 @@ stm32f407-drivers/
 ├── drivers/           # Peripheral driver implementations
 │   ├── stm32f407xx.h                    # MCU-specific register definitions
 │   ├── stm32f407xx_gpio_driver.h/c      # GPIO driver
-│   └── stm32f407xx_spi_driver.h/c       # SPI driver
+│   ├── stm32f407xx_spi_driver.h/c       # SPI driver
+│   └── stm32f407xx_i2c_driver.h/c       # I2C driver
 │
 └── examples/          # Example applications demonstrating driver usage
     ├── gpio_led_blink.c                 # Basic GPIO output (LED toggle)
     ├── gpio_button_polling.c            # GPIO input polling
     ├── gpio_button_interrupt.c          # GPIO interrupt (EXTI)
     ├── spi_master_tx_blocking.c         # SPI master transmission
-    └── spi_master_rx_blocking.c         # SPI master reception
+    ├── spi_master_rx_blocking.c         # SPI master reception
+    ├── spi_slave_tx_blocking.c          # SPI slave transmission
+    ├── spi_slave_tx_interrupt.c         # SPI slave transmission (interrupt)
+    ├── i2c_master_tx_blocking.c         # I2C master transmission (blocking)
+    ├── i2c_master_rx_blocking.c         # I2C master reception (blocking)
+    ├── i2c_slave_tx_blocking.c          # I2C slave transmission (blocking)
+    ├── i2c_slave_rx_blocking.c          # I2C slave reception (blocking)
+    ├── i2c_master_repeated_start.c      # I2C repeated start (blocking)
+    ├── i2c_master_tx_interrupt.c        # I2C master transmission (interrupt)
+    ├── i2c_master_rx_interrupt.c        # I2C master reception (interrupt)
+    └── i2c_master_repeated_start_interrupt.c  # I2C repeated start (interrupt)
 ```
 
 ---
@@ -92,7 +104,7 @@ A full-featured Serial Peripheral Interface (SPI) driver supporting all SPI peri
 - MSB-first or LSB-first bit order
 - Motorola and TI frame formats
 - Optional CRC calculation
-- Blocking (polling) mode for data transfer
+- Blocking (polling) and interrupt-driven modes
 - Status and error handling
 
 **Key APIs:**
@@ -100,6 +112,8 @@ A full-featured Serial Peripheral Interface (SPI) driver supporting all SPI peri
 - `SPI_PeripheralControl()` - Enable/disable SPI peripheral
 - `SPI_SendData()` - Transmit data in blocking mode
 - `SPI_ReceiveData()` - Receive data in blocking mode
+- `SPI_SendDataIT()` - Transmit data with interrupts (non-blocking)
+- `SPI_ReceiveDataIT()` - Receive data with interrupts (non-blocking)
 - `SPI_GetFlagStatus()` - Check SPI status flags
 
 **Supported Configurations:**
@@ -107,6 +121,44 @@ A full-featured Serial Peripheral Interface (SPI) driver supporting all SPI peri
 - Both CPOL=0/1 and CPHA=0/1 modes
 - Software and hardware chip select management
 - 8-bit and 16-bit data frames
+
+---
+
+### I2C Driver (`stm32f407xx_i2c_driver`)
+
+A comprehensive Inter-Integrated Circuit (I2C) driver supporting all I2C peripherals (I2C1-I2C3).
+
+**Features:**
+- Master and Slave mode operation
+- 7-bit and 10-bit addressing modes
+- Standard mode (100 kHz) and Fast mode (400 kHz)
+- Blocking (polling) and interrupt-driven modes
+- Repeated Start (Sr) support for atomic transactions
+- ACK/NACK control for multi-byte reception
+- Clock stretching support
+- Fast mode duty cycle configuration (2:1 or 16:9)
+- Comprehensive error detection and handling
+- Event callbacks for interrupt-driven operation
+
+**Key APIs:**
+- `I2C_Init()` - Initialize I2C peripheral with specified configuration
+- `I2C_PeripheralControl()` - Enable/disable I2C peripheral
+- `I2C_MasterSendData()` - Master transmit in blocking mode
+- `I2C_MasterReceiveData()` - Master receive in blocking mode
+- `I2C_SlaveSendData()` - Slave transmit in blocking mode
+- `I2C_SlaveReceiveData()` - Slave receive in blocking mode
+- `I2C_MasterSendDataIT()` - Master transmit with interrupts (non-blocking)
+- `I2C_MasterReceiveDataIT()` - Master receive with interrupts (non-blocking)
+- `I2C_GenerateStartCondition()` - Generate START condition
+- `I2C_GenerateStopCondition()` - Generate STOP condition
+- `I2C_ManageAcking()` - Control ACK generation
+- `I2C_GetFlagStatus()` - Check I2C status flags
+
+**Supported Configurations:**
+- Clock speeds: 100 kHz (Standard), 200 kHz, 400 kHz (Fast mode)
+- 7-bit and 10-bit slave addressing
+- Open-drain GPIO with internal or external pull-ups
+- Event and error interrupt handling
 
 ---
 
@@ -244,6 +296,189 @@ GND         ─   GND
 
 ---
 
+### I2C Examples
+
+#### 6. `i2c_master_tx_blocking.c` - I2C Master Transmission (Blocking)
+
+**Goal:** Test I2C master transmission in blocking mode with comprehensive LED feedback.
+
+**Description:**
+Configures I2C1 as master and transmits a test message ("Hello Slave, I2C test message from Master!" - 44 bytes) to a slave device at address 0x68. Uses 100 kHz standard mode with internal pull-ups. Demonstrates proper START, address, data transmission, and STOP sequence with LED status indicators.
+
+**Concepts Covered:**
+- I2C master mode configuration
+- GPIO alternate function for I2C pins (open-drain)
+- 7-bit slave addressing
+- Blocking transmission with `I2C_MasterSendData()`
+- START and STOP condition generation
+- ACK/NACK handling
+- Multi-LED status indication
+
+**Hardware:**
+- I2C1 pins: PB6 (SCL), PB7 (SDA) with AF4
+- Target slave address: 0x68
+- Status LEDs: PD12 (Green), PD13 (Orange), PD14 (Red), PD15 (Blue)
+- Internal pull-ups enabled (or external 4.7kΩ)
+
+---
+
+#### 7. `i2c_master_rx_blocking.c` - I2C Master Reception (Blocking)
+
+**Goal:** Test I2C master reception from a slave device.
+
+**Description:**
+Master receives data from slave at address 0x68. Demonstrates proper N-byte reception handling including special cases for 1-byte and 2-byte reception with ACK control.
+
+**Concepts Covered:**
+- I2C master receiver mode
+- Multi-byte reception with proper ACK/NACK sequencing
+- 1-byte, 2-byte, and N-byte reception special cases
+- Repeated start option for atomic transactions
+- Received data validation
+
+**Hardware:**
+- I2C1 pins: PB6 (SCL), PB7 (SDA)
+- Expected message from slave
+- Status LEDs for operation feedback
+
+---
+
+#### 8. `i2c_slave_tx_blocking.c` - I2C Slave Transmission (Blocking)
+
+**Goal:** Test I2C slave transmission mode.
+
+**Description:**
+Configures I2C1 as slave and waits for master to request data. Transmits predefined message when addressed by master. Demonstrates slave clock stretching and proper response to master read requests.
+
+**Concepts Covered:**
+- I2C slave mode configuration
+- Own address configuration
+- Slave transmitter mode
+- Clock stretching during address phase
+- Response to master read requests
+
+**Hardware:**
+- I2C1 pins: PB6 (SCL), PB7 (SDA)
+- Own slave address: 0x68
+- Responds to master read requests
+
+---
+
+#### 9. `i2c_slave_rx_blocking.c` - I2C Slave Reception (Blocking)
+
+**Goal:** Test I2C slave reception mode.
+
+**Description:**
+Slave waits for master to send data. Demonstrates proper handling of received data and STOP condition detection.
+
+**Concepts Covered:**
+- I2C slave receiver mode
+- Address match detection
+- Multi-byte reception in slave mode
+- STOP condition detection
+- Received data processing
+
+---
+
+#### 10. `i2c_master_repeated_start.c` - I2C Repeated Start (Blocking)
+
+**Goal:** Demonstrate repeated start (Sr) for atomic multi-transfer transactions.
+
+**Description:**
+Sends the same message ("I2C Test!" - 10 bytes) TWICE in a single transaction using repeated start. The sequence is: START → Data → Sr → Data → STOP. This keeps the bus busy between transfers, preventing other masters from interrupting.
+
+**Concepts Covered:**
+- Repeated Start (Sr) condition generation
+- Atomic multi-transfer operations
+- Bus efficiency without STOP/START overhead
+- Common sensor read pattern (write register address → Sr → read data)
+- Visual feedback with different LEDs for each transmission
+
+**Hardware:**
+- I2C1 pins: PB6 (SCL), PB7 (SDA)
+- Blue LED: First transmission
+- Green LED: Second transmission (after Sr)
+- Total data: 20 bytes in one transaction
+
+**Bus Sequence:**
+```
+START → 0x68(W) → "I2C Test!" → Sr → 0x68(W) → "I2C Test!" → STOP
+```
+
+---
+
+#### 11. `i2c_master_tx_interrupt.c` - I2C Master Transmission (Interrupt)
+
+**Goal:** Test non-blocking I2C master transmission using interrupts.
+
+**Description:**
+Uses `I2C_MasterSendDataIT()` for interrupt-driven transmission. The API returns immediately after starting the transfer, allowing CPU to perform other tasks while ISR handles byte-by-byte transmission. Application callback notified on completion.
+
+**Concepts Covered:**
+- Non-blocking I2C operation
+- Event interrupt handling (I2C1_EV_IRQn)
+- Error interrupt handling (I2C1_ER_IRQn)
+- ISR-based data transfer
+- Application event callbacks
+- Efficient CPU utilization
+
+**Hardware:**
+- I2C1 pins: PB6 (SCL), PB7 (SDA)
+- Message: "Hello Slave, I2C interrupt test!" (34 bytes)
+- NVIC interrupts: I2C1_EV_IRQn, I2C1_ER_IRQn
+
+**Advantages over Blocking:**
+- CPU free during transmission
+- Better for multi-tasking applications
+- Event-driven architecture
+- Automatic error handling in ISR
+
+---
+
+#### 12. `i2c_master_rx_interrupt.c` - I2C Master Reception (Interrupt)
+
+**Goal:** Test non-blocking I2C master reception using interrupts.
+
+**Description:**
+Interrupt-driven master receive operation. ISR handles ACK control, byte reception, and completion notification.
+
+**Concepts Covered:**
+- Non-blocking master reception
+- ISR-based receive with proper ACK/NACK control
+- Event callbacks for completion
+- Efficient multi-byte reception
+
+---
+
+#### 13. `i2c_master_repeated_start_interrupt.c` - I2C Repeated Start (Interrupt)
+
+**Goal:** Demonstrate interrupt-driven repeated start operation.
+
+**Description:**
+Performs atomic multi-transfer using repeated start in non-blocking mode. Combines benefits of repeated start (atomicity) with interrupt-driven efficiency.
+
+**Concepts Covered:**
+- Non-blocking repeated start
+- Complex multi-transfer in interrupt mode
+- State machine handling in ISR
+- Completion callbacks
+
+**Wiring (All I2C Examples - Master-to-Slave):**
+```
+Master          Slave
+PB6 (SCL)   →   PB6 (SCL)      I2C clock line (open-drain)
+PB7 (SDA)   ↔   PB7 (SDA)      I2C data line (open-drain)
+GND         ─   GND            Common ground ESSENTIAL
+```
+
+**I2C Signal Requirements:**
+- Open-drain GPIO configuration (REQUIRED)
+- Internal pull-ups enabled OR external 4.7kΩ resistors to VCC
+- Standard mode: 100 kHz SCL frequency
+- Short wires (<30cm) recommended for reliable operation
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -270,6 +505,12 @@ Each example is self-contained and can be run independently:
 3. **GPIO Button Interrupt:** Press user button (interrupt-driven toggle)
 4. **SPI Master TX:** Connect logic analyzer to SPI2 pins to observe transmission
 5. **SPI Master RX:** Connect two STM32 boards and run slave code on second board
+6. **SPI Slave TX:** Run as slave with another board as master
+7. **I2C Master TX (Blocking):** Connect two boards, observe LED feedback during transmission
+8. **I2C Master RX (Blocking):** Master receives data from slave device
+9. **I2C Slave TX/RX (Blocking):** Run as slave responding to master requests
+10. **I2C Repeated Start:** Demonstrates atomic multi-transfer operation
+11. **I2C Interrupt Mode:** Non-blocking I2C operations with event callbacks
 
 ---
 
@@ -277,14 +518,10 @@ Each example is self-contained and can be run independently:
 
 ### Completed Drivers
 - [x] GPIO Driver (with EXTI support)
-- [x] SPI Driver (Master/Slave, blocking mode)
+- [x] SPI Driver (Master/Slave, blocking and interrupt modes)
+- [x] I2C Driver (Master/Slave, blocking and interrupt modes)
 
-### In Progress / Planned Drivers
-- [ ] **I2C Driver** - Inter-Integrated Circuit communication
-  - Master and Slave modes
-  - 7-bit and 10-bit addressing
-  - Standard and Fast modes
-  - Clock stretching support
+### Planned Drivers
 
 - [ ] **UART Driver** - Universal Asynchronous Receiver/Transmitter
   - Configurable baud rates
@@ -299,11 +536,11 @@ Each example is self-contained and can be run independently:
   - Multi-processor communication
 
 ### Future Enhancements
-- [ ] Interrupt-driven SPI (non-blocking mode)
-- [ ] DMA support for SPI transfers
+- [ ] DMA support for SPI/I2C transfers
 - [ ] Timer/PWM driver
 - [ ] ADC driver
 - [ ] RTC driver
+- [ ] CAN bus driver
 - [ ] Additional examples and tutorials
 
 ---
@@ -343,6 +580,16 @@ This project is ideal for:
 - **SPI communication errors:** Check BSY flag before disabling SPI, verify TXE/RXNE flags, ensure sufficient delay for slave response
 - **Master-Slave connection issues:** Verify all 5 connections (SCK, MISO, MOSI, CS, GND), check common ground, keep wires short for high-speed communication
 
+### I2C Issues
+- **No I2C communication:** Check I2C clock enable (RCC_APB1ENR), verify PE bit is set in I2C_CR1, ensure GPIO pins configured as open-drain with pull-ups
+- **Bus always busy (BUSY flag stuck):** Check for proper STOP condition generation, verify both SDA and SCL are HIGH when idle, reset I2C peripheral if needed
+- **ACK failure (AF flag):** Verify slave address is correct, check slave device is powered and responsive, ensure pull-ups are present (internal or external)
+- **Arbitration lost (ARLO):** Multiple masters on bus, check for noise or signal integrity issues, verify proper open-drain configuration
+- **Clock stretching issues:** Ensure clock stretching is enabled if slave requires it, verify slave releases SCL after processing
+- **Wrong speed/timing:** Check APB1 clock frequency matches I2C_CR2.FREQ setting, verify CCR calculation is correct for target speed
+- **Pull-up resistor problems:** Value too high (>10kΩ) slows edges at high speed, value too low (<2kΩ) causes excessive current, 4.7kΩ typical for 100kHz
+- **Master-Slave connection issues:** Verify 3 connections (SCL, SDA, GND), check common ground is solid, ensure both devices have pull-ups enabled
+
 ### General Issues
 - **Code won't flash:** Verify ST-Link connection, check target power, try erasing chip first
 - **Hardfault on startup:** Check stack pointer initialization, verify vector table location, review startup code
@@ -368,8 +615,21 @@ A:
 **Q: How do I choose SPI clock speed?**
 A: Start with a conservative speed (2 MHz) for testing. Increase gradually while monitoring signal quality with oscilloscope/logic analyzer. Consider wire length, slave device limits, and EMI requirements.
 
+**Q: What's the difference between I2C and SPI?**
+A:
+- **I2C:** 2-wire (SCL, SDA), multi-master capable, addressable slaves, slower (100-400 kHz typical), open-drain with pull-ups
+- **SPI:** 4-wire minimum (SCK, MISO, MOSI, CS), single master, no addressing (separate CS per slave), faster (up to MHz), push-pull outputs
+
+**Q: When should I use blocking vs interrupt mode for I2C/SPI?**
+A:
+- **Blocking:** Simple applications, short transfers, no multitasking needed, easier to debug
+- **Interrupt:** Multitasking systems, long transfers, need CPU for other tasks during transfer, event-driven architecture
+
+**Q: What are I2C pull-up resistors and why are they needed?**
+A: I2C uses open-drain outputs, meaning devices can only pull lines LOW. Pull-up resistors (typically 4.7kΩ) pull lines HIGH when not driven. Both SDA and SCL require pull-ups. Can use internal pull-ups (built into STM32) or external resistors.
+
 **Q: What are the next drivers to implement?**
-A: The roadmap prioritizes I2C (for sensors), UART (for serial communication), and USART (for advanced protocols). Check the Development Roadmap section for details.
+A: The roadmap prioritizes UART (for serial communication), USART (for advanced protocols), Timer/PWM, and ADC. Check the Development Roadmap section for details.
 
 ---
 
