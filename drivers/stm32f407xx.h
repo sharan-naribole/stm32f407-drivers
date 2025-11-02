@@ -297,6 +297,21 @@ typedef struct
 #define SPI_SR_BSY           (1U << 7)
 #define SPI_SR_FRE           (1U << 8)
 
+/* -------- USART Peripheral Register Definition ------------------------------
+ * Reference: RM0090 §30 (USART) - Register map
+ * STM32F407 has USART1/2/3/6 and UART4/5 (UART lacks synchronous features).
+ */
+typedef struct
+{
+    __VO uint32_t SR;     /*!< Status register,                   Offset: 0x00 */
+    __VO uint32_t DR;     /*!< Data register,                     Offset: 0x04 */
+    __VO uint32_t BRR;    /*!< Baud rate register,                Offset: 0x08 */
+    __VO uint32_t CR1;    /*!< Control register 1,                Offset: 0x0C */
+    __VO uint32_t CR2;    /*!< Control register 2,                Offset: 0x10 */
+    __VO uint32_t CR3;    /*!< Control register 3,                Offset: 0x14 */
+    __VO uint32_t GTPR;   /*!< Guard time and prescaler register, Offset: 0x18 */
+} USART_RegDef_t;
+
 /* -------- I2C Peripheral Register Definition --------------------------------
  * Reference: RM0090 §27 (I2C) - Register map (CR1..TRISE)
  * F407 parts: CR1, CR2, OAR1, OAR2, DR, SR1, SR2, CCR, TRISE (no FLTR on F407).
@@ -313,6 +328,14 @@ typedef struct
     __VO uint32_t CCR;    /*!< Clock control register,        Offset: 0x1C */
     __VO uint32_t TRISE;  /*!< TRISE register,                Offset: 0x20 */
 } I2C_RegDef_t;
+
+/* -------- USARTx/UARTx Peripheral Definitions ------------------------------ */
+#define USART1 ((USART_RegDef_t*) USART1_BASE_ADDR)
+#define USART2 ((USART_RegDef_t*) USART2_BASE_ADDR)
+#define USART3 ((USART_RegDef_t*) USART3_BASE_ADDR)
+#define UART4  ((USART_RegDef_t*) UART4_BASE_ADDR)
+#define UART5  ((USART_RegDef_t*) UART5_BASE_ADDR)
+#define USART6 ((USART_RegDef_t*) USART6_BASE_ADDR)
 
 /* -------- I2Cx Peripheral Definitions -------------------------------------- */
 #define I2C1   ((I2C_RegDef_t*) I2C1_BASE_ADDR)
@@ -395,6 +418,75 @@ typedef struct
 /* ---- TRISE ---- */
 #define I2C_TRISE_TRISE_Pos    0U
 #define I2C_TRISE_TRISE_Msk    (0x3FU << I2C_TRISE_TRISE_Pos)
+
+/* ================ USART Bit Position Definitions ============================ */
+/* ---- SR (Status Register) ---- */
+#define USART_SR_PE            (1U << 0)   /* Parity error */
+#define USART_SR_FE            (1U << 1)   /* Framing error */
+#define USART_SR_NF            (1U << 2)   /* Noise detected flag */
+#define USART_SR_ORE           (1U << 3)   /* Overrun error */
+#define USART_SR_IDLE          (1U << 4)   /* IDLE line detected */
+#define USART_SR_RXNE          (1U << 5)   /* Read data register not empty */
+#define USART_SR_TC            (1U << 6)   /* Transmission complete */
+#define USART_SR_TXE           (1U << 7)   /* Transmit data register empty */
+#define USART_SR_LBD           (1U << 8)   /* LIN break detection flag */
+#define USART_SR_CTS           (1U << 9)   /* CTS flag */
+
+/* ---- BRR (Baud Rate Register) ---- */
+#define USART_BRR_DIV_Fraction_Pos  0U
+#define USART_BRR_DIV_Fraction_Msk  (0x0FU << USART_BRR_DIV_Fraction_Pos)
+#define USART_BRR_DIV_Mantissa_Pos  4U
+#define USART_BRR_DIV_Mantissa_Msk  (0x0FFFU << USART_BRR_DIV_Mantissa_Pos)
+
+/* ---- CR1 (Control Register 1) ---- */
+#define USART_CR1_SBK          (1U << 0)   /* Send break */
+#define USART_CR1_RWU          (1U << 1)   /* Receiver wakeup */
+#define USART_CR1_RE           (1U << 2)   /* Receiver enable */
+#define USART_CR1_TE           (1U << 3)   /* Transmitter enable */
+#define USART_CR1_IDLEIE       (1U << 4)   /* IDLE interrupt enable */
+#define USART_CR1_RXNEIE       (1U << 5)   /* RXNE interrupt enable */
+#define USART_CR1_TCIE         (1U << 6)   /* Transmission complete interrupt enable */
+#define USART_CR1_TXEIE        (1U << 7)   /* TXE interrupt enable */
+#define USART_CR1_PEIE         (1U << 8)   /* PE interrupt enable */
+#define USART_CR1_PS           (1U << 9)   /* Parity selection */
+#define USART_CR1_PCE          (1U << 10)  /* Parity control enable */
+#define USART_CR1_WAKE         (1U << 11)  /* Wakeup method */
+#define USART_CR1_M            (1U << 12)  /* Word length (0=8 bits, 1=9 bits) */
+#define USART_CR1_UE           (1U << 13)  /* USART enable */
+#define USART_CR1_OVER8        (1U << 15)  /* Oversampling mode */
+
+/* ---- CR2 (Control Register 2) ---- */
+#define USART_CR2_ADD_Pos      0U
+#define USART_CR2_ADD_Msk      (0x0FU << USART_CR2_ADD_Pos)  /* Address of the USART node */
+#define USART_CR2_LBDL         (1U << 5)   /* LIN break detection length */
+#define USART_CR2_LBDIE        (1U << 6)   /* LIN break detection interrupt enable */
+#define USART_CR2_LBCL         (1U << 8)   /* Last bit clock pulse */
+#define USART_CR2_CPHA         (1U << 9)   /* Clock phase */
+#define USART_CR2_CPOL         (1U << 10)  /* Clock polarity */
+#define USART_CR2_CLKEN        (1U << 11)  /* Clock enable */
+#define USART_CR2_STOP_Pos     12U
+#define USART_CR2_STOP_Msk     (3U << USART_CR2_STOP_Pos)    /* STOP bits */
+#define USART_CR2_LINEN        (1U << 14)  /* LIN mode enable */
+
+/* ---- CR3 (Control Register 3) ---- */
+#define USART_CR3_EIE          (1U << 0)   /* Error interrupt enable */
+#define USART_CR3_IREN         (1U << 1)   /* IrDA mode enable */
+#define USART_CR3_IRLP         (1U << 2)   /* IrDA low-power */
+#define USART_CR3_HDSEL        (1U << 3)   /* Half-duplex selection */
+#define USART_CR3_NACK         (1U << 4)   /* Smartcard NACK enable */
+#define USART_CR3_SCEN         (1U << 5)   /* Smartcard mode enable */
+#define USART_CR3_DMAR         (1U << 6)   /* DMA enable receiver */
+#define USART_CR3_DMAT         (1U << 7)   /* DMA enable transmitter */
+#define USART_CR3_RTSE         (1U << 8)   /* RTS enable */
+#define USART_CR3_CTSE         (1U << 9)   /* CTS enable */
+#define USART_CR3_CTSIE        (1U << 10)  /* CTS interrupt enable */
+#define USART_CR3_ONEBIT       (1U << 11)  /* One sample bit method enable */
+
+/* ---- GTPR (Guard Time and Prescaler Register) ---- */
+#define USART_GTPR_PSC_Pos     0U
+#define USART_GTPR_PSC_Msk     (0xFFU << USART_GTPR_PSC_Pos)  /* Prescaler value */
+#define USART_GTPR_GT_Pos      8U
+#define USART_GTPR_GT_Msk      (0xFFU << USART_GTPR_GT_Pos)   /* Guard time value */
 
 
 /* -------- EXTI Peripheral Register Definition --------
@@ -547,6 +639,23 @@ typedef struct
                                RCC->APB1RSTR &= ~(1U << 22); (void)RCC->APB1RSTR; } while(0)
 #define I2C3_REG_RESET()  do { RCC->APB1RSTR |=  (1U << 23); (void)RCC->APB1RSTR; \
                                RCC->APB1RSTR &= ~(1U << 23); (void)RCC->APB1RSTR; } while(0)
+
+/* -------- RCC: USART/UART Peripheral Reset --------------------------------- */
+/* APB1: USART2/3, UART4/5 */
+#define USART2_REG_RESET()  do { RCC->APB1RSTR |=  (1U << 17); (void)RCC->APB1RSTR; \
+                                 RCC->APB1RSTR &= ~(1U << 17); (void)RCC->APB1RSTR; } while(0)
+#define USART3_REG_RESET()  do { RCC->APB1RSTR |=  (1U << 18); (void)RCC->APB1RSTR; \
+                                 RCC->APB1RSTR &= ~(1U << 18); (void)RCC->APB1RSTR; } while(0)
+#define UART4_REG_RESET()   do { RCC->APB1RSTR |=  (1U << 19); (void)RCC->APB1RSTR; \
+                                 RCC->APB1RSTR &= ~(1U << 19); (void)RCC->APB1RSTR; } while(0)
+#define UART5_REG_RESET()   do { RCC->APB1RSTR |=  (1U << 20); (void)RCC->APB1RSTR; \
+                                 RCC->APB1RSTR &= ~(1U << 20); (void)RCC->APB1RSTR; } while(0)
+
+/* APB2: USART1, USART6 */
+#define USART1_REG_RESET()  do { RCC->APB2RSTR |=  (1U << 4); (void)RCC->APB2RSTR; \
+                                 RCC->APB2RSTR &= ~(1U << 4); (void)RCC->APB2RSTR; } while(0)
+#define USART6_REG_RESET()  do { RCC->APB2RSTR |=  (1U << 5); (void)RCC->APB2RSTR; \
+                                 RCC->APB2RSTR &= ~(1U << 5); (void)RCC->APB2RSTR; } while(0)
 
 /* ========== AHB1: DMA ========== */
 #define DMA1_CLK_EN()     (RCC->AHB1ENR |=  (1U << 21))
