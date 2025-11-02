@@ -1,0 +1,26 @@
+# macOS system files
+.DS_Store
+
+# Build artifacts
+*.o
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+
+# Debug files
+*.d
+*.su
+
+# IDE/Editor files
+.vscode/
+.settings/
+.project
+.cproject
+*.launch
+
+# Temporary files
+*~
+*.swp
+*.swo
