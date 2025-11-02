@@ -10,6 +10,7 @@ A comprehensive collection of bare-metal peripheral drivers and examples for the
 - **Complete GPIO driver** with EXTI interrupt support
 - **Full-featured SPI driver** supporting Master/Slave, 8/16-bit modes
 - **Comprehensive I2C driver** with Master/Slave, blocking/interrupt modes
+- **Full USART/UART driver** with blocking/interrupt modes, configurable baud rates
 - **Well-documented examples** with detailed inline comments and flowcharts
 - **Professional code structure** - Modular, reusable, production-ready patterns
 - **Educational focus** - Ideal for learning ARM Cortex-M4 architecture
@@ -34,7 +35,8 @@ stm32f407-drivers/
 │   ├── stm32f407xx.h                    # MCU-specific register definitions
 │   ├── stm32f407xx_gpio_driver.h/c      # GPIO driver
 │   ├── stm32f407xx_spi_driver.h/c       # SPI driver
-│   └── stm32f407xx_i2c_driver.h/c       # I2C driver
+│   ├── stm32f407xx_i2c_driver.h/c       # I2C driver
+│   └── stm32f407xx_usart_driver.h/c     # USART/UART driver
 │
 └── examples/          # Example applications demonstrating driver usage
     ├── gpio_led_blink.c                 # Basic GPIO output (LED toggle)
@@ -51,7 +53,9 @@ stm32f407-drivers/
     ├── i2c_master_repeated_start.c      # I2C repeated start (blocking)
     ├── i2c_master_tx_interrupt.c        # I2C master transmission (interrupt)
     ├── i2c_master_rx_interrupt.c        # I2C master reception (interrupt)
-    └── i2c_master_repeated_start_interrupt.c  # I2C repeated start (interrupt)
+    ├── i2c_master_repeated_start_interrupt.c  # I2C repeated start (interrupt)
+    ├── usart_tx_blocking.c              # USART transmission (blocking)
+    └── usart_rx_blocking.c              # USART reception (blocking)
 ```
 
 ---
@@ -159,6 +163,49 @@ A comprehensive Inter-Integrated Circuit (I2C) driver supporting all I2C periphe
 - 7-bit and 10-bit slave addressing
 - Open-drain GPIO with internal or external pull-ups
 - Event and error interrupt handling
+
+---
+
+### USART Driver (`stm32f407xx_usart_driver`)
+
+A complete Universal Synchronous/Asynchronous Receiver/Transmitter (USART/UART) driver supporting all USART peripherals (USART1/2/3/6, UART4/5).
+
+**Features:**
+- Configurable baud rates (up to 10.5 Mbps)
+- 8-bit and 9-bit data word lengths
+- Programmable stop bits (1, 0.5, 2, 1.5)
+- Parity control (None, Even, Odd)
+- Hardware flow control (RTS/CTS)
+- Oversampling modes (8 or 16)
+- Blocking (polling) and interrupt-driven modes
+- Comprehensive error detection (parity, framing, noise, overrun)
+- Runtime baud rate reconfiguration
+- Peer-to-peer and multi-device communication
+
+**Key APIs:**
+- `USART_Init()` - Initialize USART peripheral with specified configuration
+- `USART_PeripheralControl()` - Enable/disable USART peripheral
+- `USART_SendData()` - Transmit data in blocking mode
+- `USART_ReceiveData()` - Receive data in blocking mode
+- `USART_SendDataIT()` - Transmit data with interrupts (non-blocking)
+- `USART_ReceiveDataIT()` - Receive data with interrupts (non-blocking)
+- `USART_SetBaudRate()` - Change baud rate at runtime
+- `USART_IsTxComplete()` - Check transmission complete status
+- `USART_IsDataAvailable()` - Check if data is available to read
+- `USART_ClearErrors()` - Clear error flags
+
+**Supported Configurations:**
+- Baud rates: 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200 bps (and higher)
+- Standard UART mode (async only) for UART4/5
+- Full USART mode (sync + async) for USART1/2/3/6
+- Configurable word length, parity, and stop bits
+- Hardware and software flow control
+
+**Communication Modes:**
+- Point-to-point (two devices)
+- Multi-drop (multiple devices on shared bus with addressing)
+- Half-duplex (single wire bidirectional)
+- Full-duplex (independent TX/RX lines)
 
 ---
 
@@ -479,6 +526,86 @@ GND         ─   GND            Common ground ESSENTIAL
 
 ---
 
+### USART Examples
+
+#### 14. `usart_tx_blocking.c` - USART Transmission (Transmitter Board)
+
+**Goal:** Demonstrate USART peer-to-peer communication between two STM32 boards.
+
+**Description:**
+Configures USART2 as transmitter and sends a message when the USER button is pressed. The message is sent to another STM32 board running the receiver example. LED blinks to confirm successful transmission.
+
+**Concepts Covered:**
+- USART peripheral initialization and configuration
+- GPIO alternate function configuration for USART pins (AF7)
+- Baud rate configuration (115200 bps)
+- Blocking transmission with `USART_SendData()`
+- Button-triggered communication
+- Visual feedback with LED
+
+**Hardware (Transmitter Board):**
+- USART2 pins: PA2 (TX), PA3 (RX)
+- USER button: PA0 (triggers transmission)
+- LED: PD12 (Green LED - blinks on transmission)
+
+**Configuration:**
+- Baud Rate: 115200 bps
+- Word Length: 8 bits
+- Stop Bits: 1
+- Parity: None
+- Hardware Flow Control: None
+
+**Test Message:**
+`"Hello from STM32 Transmitter!\n"` (31 bytes)
+
+---
+
+#### 15. `usart_rx_blocking.c` - USART Reception (Receiver Board)
+
+**Goal:** Demonstrate USART reception and peer-to-peer communication.
+
+**Description:**
+Configures USART2 as receiver and waits for incoming messages from the transmitter board. LED toggles each time a complete message is received, providing visual confirmation.
+
+**Concepts Covered:**
+- USART receiver configuration
+- Blocking reception with `USART_ReceiveData()`
+- Error detection (parity, framing, overrun, noise)
+- Continuous message reception loop
+- Visual feedback with LED toggle
+
+**Hardware (Receiver Board):**
+- USART2 pins: PA2 (TX), PA3 (RX)
+- LED: PD12 (Green LED - toggles on reception)
+
+**Configuration:**
+- Same as transmitter (115200 bps, 8N1)
+
+**Wiring Between Two STM32F407 Boards:**
+```
+Transmitter         Receiver
+PA2 (TX)    ───►    PA3 (RX)    Data: Transmitter → Receiver
+PA3 (RX)    ◄───    PA2 (TX)    Data: Receiver → Transmitter (optional)
+GND         ◄──►    GND         Common ground (REQUIRED)
+```
+
+**USART Signal Requirements:**
+- TX/RX lines are standard CMOS push-pull (not open-drain like I2C)
+- No external pull resistors needed
+- Common ground connection is ESSENTIAL
+- Keep wires reasonably short (<1m recommended for 115200 bps)
+- Both boards must use identical configuration (baud rate, parity, stop bits)
+
+**Testing Procedure:**
+1. Flash transmitter code to first board
+2. Flash receiver code to second board
+3. Wire PA2-PA3, PA3-PA2, and GND-GND between boards
+4. Press USER button on transmitter board
+5. Observe: Transmitter LED blinks, Receiver LED toggles
+6. Each button press should reliably toggle receiver LED
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -520,20 +647,17 @@ Each example is self-contained and can be run independently:
 - [x] GPIO Driver (with EXTI support)
 - [x] SPI Driver (Master/Slave, blocking and interrupt modes)
 - [x] I2C Driver (Master/Slave, blocking and interrupt modes)
+- [x] USART/UART Driver (All USART1/2/3/6 and UART4/5, blocking mode)
 
 ### Planned Drivers
 
-- [ ] **UART Driver** - Universal Asynchronous Receiver/Transmitter
-  - Configurable baud rates
-  - 8/9-bit data frames
-  - Hardware flow control (RTS/CTS)
-  - DMA support
-
-- [ ] **USART Driver** - Universal Synchronous/Asynchronous Receiver/Transmitter
+- [ ] **USART Advanced Features** - Additional synchronous/async modes
   - Synchronous mode with clock
   - LIN mode support
   - IrDA encoder/decoder
   - Multi-processor communication
+  - Interrupt-driven TX/RX
+  - DMA support
 
 ### Future Enhancements
 - [ ] DMA support for SPI/I2C transfers
