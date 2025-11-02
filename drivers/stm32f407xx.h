@@ -297,6 +297,105 @@ typedef struct
 #define SPI_SR_BSY           (1U << 7)
 #define SPI_SR_FRE           (1U << 8)
 
+/* -------- I2C Peripheral Register Definition --------------------------------
+ * Reference: RM0090 §27 (I2C) - Register map (CR1..TRISE)
+ * F407 parts: CR1, CR2, OAR1, OAR2, DR, SR1, SR2, CCR, TRISE (no FLTR on F407).
+ */
+typedef struct
+{
+    __VO uint32_t CR1;    /*!< Control register 1,            Offset: 0x00 */
+    __VO uint32_t CR2;    /*!< Control register 2,            Offset: 0x04 */
+    __VO uint32_t OAR1;   /*!< Own address register 1,        Offset: 0x08 */
+    __VO uint32_t OAR2;   /*!< Own address register 2,        Offset: 0x0C */
+    __VO uint32_t DR;     /*!< Data register,                 Offset: 0x10 */
+    __VO uint32_t SR1;    /*!< Status register 1,             Offset: 0x14 */
+    __VO uint32_t SR2;    /*!< Status register 2,             Offset: 0x18 */
+    __VO uint32_t CCR;    /*!< Clock control register,        Offset: 0x1C */
+    __VO uint32_t TRISE;  /*!< TRISE register,                Offset: 0x20 */
+} I2C_RegDef_t;
+
+/* -------- I2Cx Peripheral Definitions -------------------------------------- */
+#define I2C1   ((I2C_RegDef_t*) I2C1_BASE_ADDR)
+#define I2C2   ((I2C_RegDef_t*) I2C2_BASE_ADDR)
+#define I2C3   ((I2C_RegDef_t*) I2C3_BASE_ADDR)
+
+/* ===================== I2C Bit Position Definitions ======================== */
+/* ---- CR1 ---- */
+#define I2C_CR1_PE             (1U << 0)
+#define I2C_CR1_SMBUS          (1U << 1)
+#define I2C_CR1_SMBTYPE        (1U << 3)
+#define I2C_CR1_ENARP          (1U << 4)
+#define I2C_CR1_ENPEC          (1U << 5)
+#define I2C_CR1_ENGC           (1U << 6)
+#define I2C_CR1_NOSTRETCH      (1U << 7)
+#define I2C_CR1_START          (1U << 8)
+#define I2C_CR1_STOP           (1U << 9)
+#define I2C_CR1_ACK            (1U << 10)
+#define I2C_CR1_POS            (1U << 11)
+#define I2C_CR1_PEC            (1U << 12)
+#define I2C_CR1_ALERT          (1U << 13)
+#define I2C_CR1_SWRST          (1U << 15)
+
+/* ---- CR2 ---- */
+#define I2C_CR2_FREQ_Pos       0U
+#define I2C_CR2_FREQ_Msk       (0x3FU << I2C_CR2_FREQ_Pos)   /* PCLK1 freq (MHz) */
+#define I2C_CR2_ITERREN        (1U << 8)   /* Error IRQ enable */
+#define I2C_CR2_ITEVTEN        (1U << 9)   /* Event IRQ enable */
+#define I2C_CR2_ITBUFEN        (1U << 10)  /* Buffer IRQ enable */
+#define I2C_CR2_DMAEN          (1U << 11)  /* DMA enable */
+#define I2C_CR2_LAST           (1U << 12)  /* DMA last transfer */
+
+/* ---- OAR1 ---- */
+#define I2C_OAR1_ADD0          (1U << 0)      /* 7-bit: ignored, 10-bit: interface */
+#define I2C_OAR1_ADD_Pos       1U             /* ADD[7:1] or ADD[9:8] in 10-bit */
+#define I2C_OAR1_ADDMODE       (1U << 15)     /* 0:7-bit, 1:10-bit */
+
+/* ---- OAR2 ---- */
+#define I2C_OAR2_ENDUAL        (1U << 0)
+#define I2C_OAR2_ADD2_Pos      1U             /* ADD2[7:1] */
+#define I2C_OAR2_ADD2_Msk      (0x7FU << I2C_OAR2_ADD2_Pos)
+
+/* ---- DR ---- */
+#define I2C_DR_DR_Pos          0U
+#define I2C_DR_DR_Msk          (0xFFU << I2C_DR_DR_Pos)
+
+/* ---- SR1 ---- */
+#define I2C_SR1_SB             (1U << 0)
+#define I2C_SR1_ADDR           (1U << 1)
+#define I2C_SR1_BTF            (1U << 2)
+#define I2C_SR1_ADD10          (1U << 3)
+#define I2C_SR1_STOPF          (1U << 4)
+#define I2C_SR1_RXNE           (1U << 6)
+#define I2C_SR1_TXE            (1U << 7)
+#define I2C_SR1_BERR           (1U << 8)
+#define I2C_SR1_ARLO           (1U << 9)
+#define I2C_SR1_AF             (1U << 10)
+#define I2C_SR1_OVR            (1U << 11)
+#define I2C_SR1_PECERR         (1U << 12)
+#define I2C_SR1_TIMEOUT        (1U << 14)
+#define I2C_SR1_SMBALERT       (1U << 15)
+
+/* ---- SR2 ---- */
+#define I2C_SR2_MSL            (1U << 0)
+#define I2C_SR2_BUSY           (1U << 1)
+#define I2C_SR2_TRA            (1U << 2)
+#define I2C_SR2_GENCALL        (1U << 4)
+#define I2C_SR2_SMBDEFAULT     (1U << 5)
+#define I2C_SR2_SMBHOST        (1U << 6)
+#define I2C_SR2_DUALF          (1U << 7)
+#define I2C_SR2_PEC_Pos        8U
+#define I2C_SR2_PEC_Msk        (0xFFU << I2C_SR2_PEC_Pos)
+
+/* ---- CCR ---- */
+#define I2C_CCR_CCR_Pos        0U
+#define I2C_CCR_CCR_Msk        (0x0FFFU << I2C_CCR_CCR_Pos)
+#define I2C_CCR_DUTY           (1U << 14)
+#define I2C_CCR_FS             (1U << 15)
+
+/* ---- TRISE ---- */
+#define I2C_TRISE_TRISE_Pos    0U
+#define I2C_TRISE_TRISE_Msk    (0x3FU << I2C_TRISE_TRISE_Pos)
+
 
 /* -------- EXTI Peripheral Register Definition --------
  * Reference: RM0090 §10 External interrupt/event controller (EXTI)
@@ -441,6 +540,13 @@ typedef struct
 #define SPI3_REG_RESET()  do { RCC->APB1RSTR |=  (1U << 15); (void)RCC->APB1RSTR; \
                                RCC->APB1RSTR &= ~(1U << 15); (void)RCC->APB1RSTR; } while(0)
 
+/* -------- RCC: I2C Peripheral Reset (APB1RSTR) ----------------------------- */
+#define I2C1_REG_RESET()  do { RCC->APB1RSTR |=  (1U << 21); (void)RCC->APB1RSTR; \
+                               RCC->APB1RSTR &= ~(1U << 21); (void)RCC->APB1RSTR; } while(0)
+#define I2C2_REG_RESET()  do { RCC->APB1RSTR |=  (1U << 22); (void)RCC->APB1RSTR; \
+                               RCC->APB1RSTR &= ~(1U << 22); (void)RCC->APB1RSTR; } while(0)
+#define I2C3_REG_RESET()  do { RCC->APB1RSTR |=  (1U << 23); (void)RCC->APB1RSTR; \
+                               RCC->APB1RSTR &= ~(1U << 23); (void)RCC->APB1RSTR; } while(0)
 
 /* ========== AHB1: DMA ========== */
 #define DMA1_CLK_EN()     (RCC->AHB1ENR |=  (1U << 21))
